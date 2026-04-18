@@ -298,7 +298,7 @@ export default function App() {
                 <div className="flex items-center justify-between mb-8">
                   <div>
                     <h3 className="text-2xl font-bold uppercase tracking-tight">Forge Automation</h3>
-                    <p className="text-xs text-text-dim mt-1 font-mono">Staging gemma_setup.py for local execution</p>
+                    <p className="text-xs text-text-dim mt-1 font-mono">Staging gemma_setup.py via Remote Protocol</p>
                   </div>
                   <div className="flex gap-3">
                     <button 
@@ -306,32 +306,33 @@ export default function App() {
                       className="flex items-center gap-2 px-6 py-2 bg-accent text-bg text-xs font-bold rounded hover:brightness-110 transition-all shadow-lg shadow-accent/10"
                     >
                       {copied ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                      {copied ? 'COMMAND_COPIED' : 'COPY_LAUNCH_COMMAND'}
+                      {copied ? 'COMMAND_COPIED' : 'COPY_REMOTE_PROTO_EXEC'}
                     </button>
                   </div>
                 </div>
 
-                <div className="sleek-code-container p-8 font-mono text-[13px] leading-relaxed relative group">
-                  <div className="absolute top-4 right-4 text-[10px] text-white/20 uppercase tracking-widest group-hover:text-accent transition-colors">gemma_setup_hardened.py</div>
-                  <pre className="text-[#E2E8F0]">
-                    <span className="text-[#F472B6]">import</span> os{"\n"}
-                    <span className="text-[#F472B6]">import</span> subprocess{"\n"}
-                    <span className="text-[#F472B6]">import</span> sys{"\n\n"}
-                    <span className="text-[#64748B]"># Systemed Environment Overrides for MoE</span>{"\n"}
-                    <span className="text-[#F472B6]">def</span> <span className="text-[#60A5FA]">apply_optimizations</span>(cores):{"\n"}
-                    {"    "}config_dir = <span className="text-[#34D399]">"/etc/systemd/system/ollama.service.d"</span>{"\n"}
-                    {"    "}os.makedirs(config_dir, exist_ok=<span className="text-[#F472B6]">True</span>){"\n"}
-                    {"    "}threads = max(cores // 2, 1){"\n"}
-                    {"    "}opt = <span className="text-[#34D399]">{'f"[Service]\\nEnvironment=\\"OLLAMA_NUM_PARALLEL={threads}\\"\\nEnvironment=\\"OLLAMA_FLASH_ATTENTION=1\\"\\n"'}</span>{"\n"}
-                    {"    "}<span className="text-[#F472B6]">with</span> open(f<span className="text-[#34D399]">"{'{config_dir}'}/override.conf"</span>, <span className="text-[#34D399]">"w"</span>) <span className="text-[#F472B6]">as</span> f:{"\n"}
-                    {"        "}f.write(opt){"\n"}
-                    {"    "}subprocess.run(<span className="text-[#34D399]">"systemctl daemon-reload && systemctl restart ollama"</span>, shell=<span className="text-[#F472B6]">True</span>){"\n\n"}
-                    <span className="text-[#64748B]"># Main Execution Hook</span>{"\n"}
+                <div className="sleek-code-container p-8 font-mono text-[12px] leading-relaxed relative group overflow-x-auto">
+                  <div className="absolute top-4 right-4 text-[10px] text-white/20 uppercase tracking-widest group-hover:text-accent transition-colors">gemma_setup_v2_hardened.py</div>
+                  <pre className="text-[#E2E8F0] whitespace-pre">
+                    <span className="text-[#F472B6]">import</span> os, subprocess, sys, re{"\n"}
+                    <span className="text-[#64748B]"># Hardware Deep-Audit Logic</span>{"\n"}
+                    <span className="text-[#F472B6]">def</span> <span className="text-[#60A5FA]">get_hardware</span>():{"\n"}
+                    {"    "}ram = <span className="text-[#34D399]">"Unknown"</span>{"\n"}
+                    {"    "}<span className="text-[#F472B6]">with</span> open(<span className="text-[#34D399]">'/proc/meminfo'</span>, <span className="text-[#34D399]">'r'</span>) <span className="text-[#F472B6]">as</span> f:{"\n"}
+                    {"        "}total_kb = int(re.search(<span className="text-[#34D399]">r'\d+'</span>, f.readline()).group()){"\n"}
+                    {"        "}ram = <span className="text-[#34D399]">f"{'{total_kb / 1024**2:.1f}'} GB"</span>{"\n"}
+                    {"    "}<span className="text-[#F472B6]">return</span> {"{"}<span className="text-[#34D399]">"cores"</span>: os.cpu_count(), <span className="text-[#34D399]">"ram"</span>: ram, <span className="text-[#34D399]">"gpu"</span>: <span className="text-[#60A5FA]">get_gpu_type</span>(){"}"}{"\n\n"}
+                    <span className="text-[#64748B]"># MoE Kernel Staging</span>{"\n"}
+                    <span className="text-[#F472B6]">def</span> <span className="text-[#60A5FA]">apply_overrides</span>(cores):{"\n"}
+                    {"    "}path = <span className="text-[#34D399]">"/etc/systemd/system/ollama.service.d/override.conf"</span>{"\n"}
+                    {"    "}conf = <span className="text-[#34D399]">f"[Service]\\nEnvironment=\\"OLLAMA_NUM_PARALLEL={"{cores//2}"}\\"\\n"</span>{"\n"}
+                    {"    "}<span className="text-[#F472B6]">with</span> open(path, <span className="text-[#34D399]">"w"</span>) <span className="text-[#F472B6]">as</span> f: f.write(conf){"\n"}
+                    {"    "}subprocess.run(<span className="text-[#34D399]">"systemctl daemon-reload && systemctl restore ollama"</span>, shell=<span className="text-[#F472B6]">True</span>){"\n\n"}
+                    <span className="text-[#64748B]"># Entry Point Guard</span>{"\n"}
                     <span className="text-[#F472B6]">if</span> __name__ == <span className="text-[#34D399]">"__main__"</span>:{"\n"}
-                    {"    "}<span className="text-[#F472B6]">if</span> os.geteuid() != 0:{"\n"}
-                    {"        "}print(<span className="text-[#34D399]">"Root required for configuration."</span>){"\n"}
-                    {"        "}sys.exit(1){"\n"}
-                    {"    "}apply_optimizations(os.cpu_count())
+                    {"    "}<span className="text-[#F472B6]">if</span> os.geteuid() != 0: sys.exit(<span className="text-[#34D399]">"Sudo required."</span>){"\n"}
+                    {"    "}hw = get_hardware(){"\n"}
+                    {"    "}apply_overrides(hw[<span className="text-[#34D399]">"cores"</span>])
                   </pre>
                 </div>
 

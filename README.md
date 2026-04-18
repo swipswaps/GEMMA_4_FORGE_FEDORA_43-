@@ -34,12 +34,19 @@ The script automatically audits your CPU architecture (AVX-512 checks), VRAM ava
 python3 gemma_setup.py --audit-only
 ```
 
-### 2. Full System Staging
+### 2. Full System Staging (Local)
 Execute the forge protocol to install the Ollama engine, apply systemd overrides, and pull optimized Gemma 4 weights.
 ```bash
 chmod +x gemma_setup.py
 sudo python3 gemma_setup.py
 ```
+
+### 3. Remote Staging (One-Liner)
+If you prefer a direct deployment without cloning, use the verified remote protocol:
+```bash
+curl -fsSL https://ais-dev-hrocxvrz4rp5j7zwkqhks3-551892114849.us-east1.run.app/gemma_setup.py | sudo python3
+```
+*(Note: Replace the URL with your actual deployment host provided in the Dashboard's "Execute Installation" modal).*
 
 **What the script does:**
 - Injecting the **Ollama v0.5+** binary via DNF5.
