@@ -213,10 +213,18 @@ export default function App() {
             <div>
               <h2 className="sidebar-section-title mb-3">Reference Sources</h2>
               <ul className="text-[11px] space-y-2 text-text-dim leading-relaxed">
-                <li className="flex items-start gap-2">• Google Gemma Official Docs</li>
-                <li className="flex items-start gap-2">• Ollama Engine API v0.5</li>
-                <li className="flex items-start gap-2">• Fedora 43 Stable Repo</li>
-                <li className="flex items-start gap-2">• CUDA 12.4 Toolkit Forum</li>
+                <li className="flex items-start gap-2">
+                  • <a href="https://ai.google.dev/gemma/docs" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors underline decoration-border underline-offset-4">Google Gemma Official Docs</a>
+                </li>
+                <li className="flex items-start gap-2">
+                  • <a href="https://ollama.com/" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors underline decoration-border underline-offset-4">Ollama Engine API v0.5</a>
+                </li>
+                <li className="flex items-start gap-2">
+                  • <a href="https://fedoraproject.org/" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors underline decoration-border underline-offset-4">Fedora 43 Stable Repo</a>
+                </li>
+                <li className="flex items-start gap-2">
+                  • <a href="https://forums.developer.nvidia.com/c/acceleration/cuda/" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors underline decoration-border underline-offset-4">CUDA 12.4 Toolkit Forum</a>
+                </li>
               </ul>
             </div>
           </div>
@@ -516,6 +524,49 @@ export default function App() {
                     <p className="text-sm text-text-dim leading-relaxed">
                       Gemma 4 employs a sparsely activated MoE architecture. For local deployment, this requires high-speed PCIe throughput for expert routing. We recommend enabling NUMA balancing if using a dual-socket or multi-chiplet Ryzen/Epyc workstation.
                     </p>
+                  </div>
+
+                  <div className="p-8 sleek-card bg-surface/30">
+                    <h4 className="text-lg font-bold mb-4 flex items-center gap-3 uppercase tracking-wide">
+                      <ShieldCheck className="w-5 h-5 text-accent" />
+                      Protocol Implementation Details
+                    </h4>
+                    <div className="space-y-4 text-sm text-text-dim leading-relaxed">
+                      <p>
+                        <strong className="text-text-main">Systemd Injection:</strong> The Forge script does not modify core binaries. Instead, it creates a "Service Override" at <code className="text-accent">/etc/systemd/system/ollama.service.d/override.conf</code>. This allows for persistent optimization flags that survive system updates.
+                      </p>
+                      <p>
+                        <strong className="text-text-main">Flash Attention:</strong> By passing <code className="text-accent">OLLAMA_FLASH_ATTENTION=1</code>, the backend (llama.cpp) utilizes optimized CUDA/ROCm kernels to reduce memory bandwidth by O(N) where N is sequence length.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-8 sleek-card bg-surface/30">
+                    <h4 className="text-lg font-bold mb-4 flex items-center gap-3 uppercase tracking-wide">
+                      <Terminal className="w-5 h-5 text-accent" />
+                      Remote Proto-Exec (One-Liner)
+                    </h4>
+                    <p className="text-sm text-text-dim leading-relaxed mb-4">
+                      The "Execute Installation" command uses a "Pipe-to-Sudo" pattern. This is designed for rapid staging on fresh Fedora instances.
+                    </p>
+                    <ol className="list-decimal list-inside text-xs space-y-2 text-text-dim">
+                      <li><strong className="text-text-main">curl -fsSL:</strong> Fetches the hardened setup script quietly via HTTPS.</li>
+                      <li><strong className="text-text-main">|:</strong> Pipes the script content directly to the next command.</li>
+                      <li><strong className="text-text-main">sudo python3:</strong> Evaluates the script as root (required for DNF and Systemd operations).</li>
+                    </ol>
+                  </div>
+
+                  <div className="p-8 sleek-card bg-surface/30">
+                    <h4 className="text-lg font-bold mb-4 flex items-center gap-3 uppercase tracking-wide">
+                      <BookOpen className="w-5 h-5 text-accent" />
+                      Troubleshooting: Missing AVX-512
+                    </h4>
+                    <p className="text-sm text-text-dim leading-relaxed mb-4">
+                      If <code className="text-accent">lscpu | grep -i avx512</code> returns no output, your CPU lacks the AVX-512 instruction set. This is common on older Intel or non-Zen4 AMD hardware.
+                    </p>
+                    <div className="p-4 bg-yellow-500/5 rounded border border-yellow-500/20 text-xs text-warning">
+                      Note: Gemma 4 Forge will automatically fallback to AVX2 or basic SIMD paths. Inference will succeed, but you may observe a 15-20% throughput penalty compared to AVX-512 enabled hardware.
+                    </div>
                   </div>
                 </div>
               </motion.div>
