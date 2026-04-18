@@ -1,0 +1,6 @@
+{
+  "name": "Gemma 4 Forge",
+  "description": "A high-performance setup and optimization dashboard for Gemma 4 on Fedora 43.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

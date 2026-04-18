@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0D0E12;
+  --color-surface: #1A1C23;
+  --color-accent: #38BDF8;
+  --color-accent-dim: rgba(56, 189, 248, 0.1);
+  --color-text-main: #F1F5F9;
+  --color-text-dim: #94A3B8;
+  --color-border: #2D313E;
+  --color-code-bg: #000000;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  
+  --font-sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "Courier New", monospace;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text-main);
+    font-family: var(--font-sans);
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* Theme Specific Layout Patterns */
+.sleek-progress-bg {
+  height: 4px;
+  background: #2D313E;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.sleek-progress-fill {
+  height: 100%;
+  background: var(--color-accent);
+}
+
+.sleek-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.sleek-code-container {
+  background: var(--color-code-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.sidebar-section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-dim);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  background: var(--color-success);
+}
+
