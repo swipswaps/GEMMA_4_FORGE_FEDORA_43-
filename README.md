@@ -1,6 +1,16 @@
 # GEMMA 4 FORGE // FEDORA 43
 
-Gemma 4 Forge is a high-performance staging and optimization environment for deploying **Gemma 4** (Google's 2026 MiXed-of-Experts architecture) locally on **Fedora 43 Workstation**. It combines an elegant technical dashboard for real-time monitoring with a robust system staging script for hardware-level tuning.
+Gemma 4 Forge is a high-performance staging and optimization environment for deploying **Gemma 4** (Google's MiXed-of-Experts architecture) locally on **Fedora 43 Workstation**. It combines an elegant technical dashboard for real-time monitoring with a robust system staging script for hardware-level tuning.
+
+---
+
+## 🛡️ Protocol Integrity Features
+
+Forge is built with high-availability and stability as core requirements:
+
+- **EADDRINUSE Detection**: The Forge server performs a pre-flight integrity check. If port 3000 is occupied, it safely terminates to prevent version collision.
+- **SIGINT Clean Exit**: Supports graceful termination. Pressing `Ctrl+C` triggers an asynchronous cleanup sequence that persists telemetry logs to `forge_protocol.log` before closing the process.
+- **Remote Proto-Exec**: Verified HTTPS-bootstrapped staging enables remote deployment with zero-cloning requirements.
 
 ---
 

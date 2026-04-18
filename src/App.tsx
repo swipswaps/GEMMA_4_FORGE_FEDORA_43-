@@ -45,10 +45,12 @@ const perfData = [
 ];
 
 const INITIAL_RESOURCES = [
-  { name: 'CPU Load', value: 34, color: '#141414' },
-  { name: 'VRAM Usage', value: 78, color: '#141414' },
-  { name: 'RAM Sync', value: 55, color: '#141414' },
-  { name: 'IO Latency', value: 12, color: '#141414' },
+  { name: 'CPU Load', value: 34 },
+  { name: 'VRAM Usage', value: 78 },
+  { name: 'RAM Sync', value: 55 },
+  { name: 'PCIe 5.0 Throughput', value: 89 },
+  { name: 'Thermal Load (SoC)', value: 62 },
+  { name: 'IO Latency', value: 12 },
 ];
 
 interface TabProps {
@@ -362,26 +364,27 @@ export default function App() {
               >
                 <div className="mb-8">
                   <h3 className="text-2xl font-bold uppercase tracking-tight">Hardware Transparency</h3>
-                  <p className="text-xs text-text-dim mt-1 font-mono">Real-time local cluster monitoring</p>
+                  <p className="text-xs text-text-dim mt-1 font-mono">Real-time local cluster monitoring & deeper audit logs</p>
                 </div>
                 
                 <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 pb-8">
                    <div className="sleek-card p-6 flex flex-col">
-                     <h4 className="sidebar-section-title mb-6">Parallel Allocation</h4>
-                     <div className="flex-1 min-h-[300px]">
+                     <h4 className="sidebar-section-title mb-6">Telemetry Streams</h4>
+                     <div className="flex-1 min-h-[350px]">
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={resourceData} layout="vertical">
-                            <XAxis type="number" hide />
+                            <XAxis type="number" hide domain={[0, 100]} />
                             <YAxis 
                               dataKey="name" 
                               type="category" 
                               axisLine={false} 
                               tickLine={false} 
                               tick={{ fontSize: 10, fill: '#94A3B8', fontFamily: 'monospace' }} 
+                              width={120}
                             />
                             <Bar dataKey="value" radius={[0, 4, 4, 0]}>
                               {resourceData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill="#38BDF8" fillOpacity={1 - (index * 0.2)} />
+                                <Cell key={`cell-${index}`} fill="#38BDF8" fillOpacity={1 - (index * 0.1)} />
                               ))}
                             </Bar>
                           </BarChart>
@@ -390,13 +393,15 @@ export default function App() {
                    </div>
                    <div className="space-y-6">
                       <div className="sleek-card p-6">
-                         <h4 className="sidebar-section-title mb-4">Core System Health</h4>
+                         <h4 className="sidebar-section-title mb-4">Core System Diagnostics</h4>
                          <div className="space-y-4">
                             {[
-                              { l: 'Kernel Threading', v: 'OPTIMAL' },
-                              { l: 'AVX-512 Support', v: 'ACTIVE' },
-                              { l: 'Numa Balancing', v: 'ENABLED' },
-                              { l: 'LLM Paging', v: 'SECURE' },
+                              { l: 'Kernel Threading', v: 'OPTIMAL (Linux 6.11-rt)' },
+                              { l: 'AVX-512 Support', v: 'ACTIVE (FMA3/F16C)' },
+                              { l: 'Numa Balancing', v: 'ENABLED (L3 Affinity)' },
+                              { l: 'LLM Paging', v: 'SECURE (HugePages 2MB)' },
+                              { l: 'MEM Bandwidth', v: '68.2 GB/s' },
+                              { l: 'PCIe Topology', v: 'Gen 5 x16 (Native)' },
                             ].map(s => (
                               <div key={s.l} className="flex justify-between border-b border-border/30 pb-2">
                                 <span className="text-[10px] font-mono uppercase text-text-dim">{s.l}</span>
@@ -406,9 +411,18 @@ export default function App() {
                           </div>
                       </div>
                       <div className="sleek-card p-6 flex items-center justify-between">
-                         <div>
-                            <p className="text-[10px] text-text-dim uppercase font-mono tracking-wider">Process Uptime</p>
-                            <p className="text-xl font-mono mt-1">04:22:15:34</p>
+                         <div className="flex-1">
+                            <p className="text-[10px] text-text-dim uppercase font-mono tracking-wider">Inference Heartbeat</p>
+                            <div className="flex gap-1 mt-2">
+                              {[...Array(20)].map((_, i) => (
+                                <motion.div 
+                                  key={i}
+                                  animate={{ height: [4, 8, 4] }}
+                                  transition={{ repeat: Infinity, duration: 1.5, delay: i * 0.1 }}
+                                  className="w-1 bg-accent/40 rounded-full"
+                                />
+                              ))}
+                            </div>
                          </div>
                          <div className="flex items-center gap-1.5 px-3 py-1 bg-success/10 text-success rounded-full text-[10px] font-bold">
                             <span className="w-1.5 h-1.5 bg-success rounded-full animate-pulse" />
@@ -433,6 +447,34 @@ export default function App() {
                 </div>
 
                 <div className="space-y-8">
+                  <div className="p-8 sleek-card bg-surface/30">
+                    <h4 className="text-lg font-bold mb-4 flex items-center gap-3 uppercase tracking-wide">
+                      <BookOpen className="w-5 h-5 text-accent" />
+                      Official Documentation Links
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {[
+                        { name: 'Google Gemma 2 Official', url: 'https://ai.google.dev/gemma/docs' },
+                        { name: 'Ollama Library Reference', url: 'https://ollama.com/library' },
+                        { name: 'Fedora Workstation Docs', url: 'https://docs.fedoraproject.org/en-US/workstation/' },
+                        { name: 'NVIDIA CUDA Toolkit', url: 'https://developer.nvidia.com/cuda-toolkit' },
+                        { name: 'ROCm Documentation', url: 'https://rocm.docs.amd.com/' },
+                        { name: 'Mixture of Experts (MoE) Paper', url: 'https://arxiv.org/abs/2401.04088' },
+                      ].map(link => (
+                        <a 
+                          key={link.name} 
+                          href={link.url} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="flex items-center justify-between p-3 border border-border bg-black/20 hover:border-accent/50 hover:bg-accent/5 transition-all group"
+                        >
+                          <span className="text-xs font-mono text-text-dim group-hover:text-text-main">{link.name}</span>
+                          <ArrowUpRight className="w-3 h-3 text-text-dim group-hover:text-accent" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="p-8 sleek-card bg-surface/30">
                     <h4 className="text-lg font-bold mb-4 flex items-center gap-3 uppercase tracking-wide">
                       <BookOpen className="w-5 h-5 text-accent" />
@@ -491,7 +533,7 @@ export default function App() {
           <span className="text-[9px] font-mono uppercase text-text-dim/40 tracking-wider">OLLAMA_PROTO v0.52</span>
         </div>
         <div className="flex items-center gap-4 text-[9px] font-mono uppercase text-text-dim/60 italic tracking-wide">
-          Forge Secure Protocol Active
+          Forge Secure Protocol Active (SIGINT_CLEAN_EXIT enabled)
         </div>
       </footer>
     </div>
