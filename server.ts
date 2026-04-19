@@ -53,6 +53,19 @@ async function startServer() {
 
   const app = express();
 
+  // SECURE PROTOCOL ENDPOINT (Avoid SPA Fallback & Static Conflicts)
+  app.get('/api/setup-protocol', (req, res) => {
+    const scriptPath = path.join(__dirname, 'public', 'gemma_setup.py');
+    logToDisk(`STAGING_REQUEST: Serving protocol script to ${req.ip}`);
+    if (fs.existsSync(scriptPath)) {
+      res.setHeader('Content-Type', 'text/plain'); // Serve as plain text for curl piping
+      res.sendFile(scriptPath);
+    } else {
+      logToDisk(`ERROR: Script not found at ${scriptPath}`);
+      res.status(404).send('Protocol binary not staged on server.');
+    }
+  });
+
   logToDisk("Integrity Verified. Initializing Forge Secure Server Protocol...");
 
   // Vite middleware for development

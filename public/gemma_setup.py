@@ -31,49 +31,48 @@ def run_cmd(cmd, check=True):
 
 def check_root():
     if os.geteuid() != 0:
-        print_error("Root privileges required for systemd configuration.")
+        print_error("Root privileges required for staging.")
         print("Please run with: \033[1;33msudo python3 gemma_setup.py\033[0m")
         sys.exit(1)
 
-def get_ram_info():
+def get_gpu_type():
+    if shutil.which("nvidia-smi"):
+        name = run_cmd("nvidia-smi --query-gpu=name --format=csv,noheader", check=False)
+        return f"NVIDIA: {name}" if name else "NVIDIA (Detected)"
+    elif shutil.which("rocm-smi"):
+        return "AMD (ROCm Compatible)"
+    gpu_grep = run_cmd("lspci | grep -i vga", check=False)
+    if gpu_grep:
+        return gpu_grep.split(":")[-1].strip()
+    return "Generic GPU/Integrated"
+
+def get_hardware():
+    ram = "Unknown"
     try:
         with open('/proc/meminfo', 'r') as f:
-            for line in f:
-                if 'MemTotal' in line:
-                    total_kb = int(re.search(r'\d+', line).group())
-                    total_gb = total_kb / (1024 * 1024)
-                    return f"{total_gb:.1f} GB"
-    except:
-        return "Unknown"
+            total_kb = int(re.search(r'\d+', f.readline()).group())
+            ram = f"{total_kb / 1024**2:.1f} GB"
+    except Exception:
+        pass
+    return {
+        "cores": os.cpu_count(),
+        "ram": ram,
+        "gpu": get_gpu_type()
+    }
 
-def get_gpu_info():
-    if shutil.which("nvidia-smi"):
-        name = run_cmd("nvidia-smi --query-gpu=name --format=csv,noheader")
-        return f"NVIDIA: {name}"
-    elif shutil.which("rocm-smi"):
-        return "AMD: ROCm Compatible Device"
-    else:
-        # Check lspci
-        gpu_grep = run_cmd("lspci | grep -i vga")
-        if gpu_grep:
-            return gpu_grep.split(":")[-1].strip()
-    return "Generic CPU/Integrated"
-
-def apply_optimizations(cores):
+def apply_overrides(cores):
     print_header("Applying LLM Kernel Optimizations...")
     config_dir = "/etc/systemd/system/ollama.service.d"
     try:
         os.makedirs(config_dir, exist_ok=True)
-        # MoE optimization: leave some cores for the router and expert switching
         threads = max(cores // 2, 1)
-        # Environment overrides for Ollama
-        optimizations = f"[Service]\nEnvironment=\"OLLAMA_NUM_PARALLEL={threads}\"\nEnvironment=\"OLLAMA_FLASH_ATTENTION=1\"\nEnvironment=\"OLLAMA_NUMA=1\"\n"
+        conf = f"[Service]\nEnvironment=\"OLLAMA_NUM_PARALLEL={threads}\"\nEnvironment=\"OLLAMA_FLASH_ATTENTION=1\"\nEnvironment=\"OLLAMA_NUMA=1\"\n"
         with open(f"{config_dir}/override.conf", "w") as f:
-            f.write(optimizations)
+            f.write(conf)
         run_cmd("systemctl daemon-reload && systemctl restart ollama")
         print_success(f"Optimizations locked: {threads} parallel threads enabled via systemd.")
     except Exception as e:
-        print_error(f"Failed to apply systemd overrides: {e}")
+        print_error(f"Failed to apply overrides: {e}")
 
 def run_benchmark():
     if not shutil.which("ollama"):
@@ -110,11 +109,7 @@ def main():
         check_root()
     
     print_header("Hardware Deep-Audit...")
-    hardware = {
-        "cores": os.cpu_count(),
-        "ram": get_ram_info(),
-        "gpu": get_gpu_info()
-    }
+    hardware = get_hardware()
     print(f"  CPU: {hardware['cores']} Logical Cores")
     print(f"  RAM: {hardware['ram']}")
     print(f"  GPU: {hardware['gpu']}")
@@ -140,7 +135,7 @@ def main():
     run_cmd("ollama pull gemma:latest")
 
     # 4. Lock Optimizations
-    apply_optimizations(hardware['cores'])
+    apply_overrides(hardware['cores'])
     
     print_header("Final Verification")
     print_success("Staging engine successfully completed the Forge protocol.")

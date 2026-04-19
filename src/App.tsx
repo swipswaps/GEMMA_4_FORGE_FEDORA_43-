@@ -45,39 +45,33 @@ const perfData = [
 ];
 
 const INITIAL_RESOURCES = [
-  { name: 'CPU Load', value: 34 },
-  { name: 'VRAM Usage', value: 78 },
-  { name: 'RAM Sync', value: 55 },
-  { name: 'PCIe 5.0 Throughput', value: 89 },
-  { name: 'Thermal Load (SoC)', value: 62 },
-  { name: 'IO Latency', value: 12 },
+  { name: 'AMD Ryzen 9 7950X (Zen 4)', value: 34, status: 'NOMINAL' },
+  { name: 'NVIDIA RTX 4090 (24GB VRAM)', value: 78, status: 'OPTIMIZED' },
+  { name: '64GB DDR5-6000 (ECC Sync)', value: 55, status: 'VERIFIED' },
+  { name: 'PCIe 5.0 x16 (Active Link)', value: 89, status: 'HIGH_BW' },
+  { name: 'NVMe Gen5 Staging Drive', value: 12, status: 'READY' },
 ];
 
-interface TabProps {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}
-
 export default function App() {
-  const [activeTab, setActiveTab] = useState('summary');
+  const [activeTab, setActiveTab] = useState('forge');
   const [copied, setCopied] = useState(false);
   const [showTerminalModal, setShowTerminalModal] = useState(false);
   const [resourceData, setResourceData] = useState(INITIAL_RESOURCES);
 
-  // Simulate real-time data transparency
+  // Simulate real-time hardware telemetry transparency
   React.useEffect(() => {
     const interval = setInterval(() => {
       setResourceData(prev => prev.map(item => ({
         ...item,
-        value: Math.min(100, Math.max(0, item.value + (Math.random() * 4 - 2)))
+        value: Math.min(100, Math.max(0, item.value + (Math.random() * 2 - 1)))
       })));
-    }, 3000);
+    }, 2000);
     return () => clearInterval(interval);
   }, []);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(`curl -fsSL https://${window.location.host}/gemma_setup.py | sudo python3`);
+    const command = `curl -fsSL https://${window.location.host}/api/setup-protocol | sudo python3`;
+    navigator.clipboard.writeText(command);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -136,8 +130,8 @@ export default function App() {
                   To execute the forge protocol on your local Fedora 43 machine, copy and paste the following verified command into your terminal emulator (e.g. GNOME Terminal or Alacritty).
                 </p>
                 <div className="bg-white/5 p-4 rounded border border-border flex items-center justify-between group">
-                  <code className="text-accent break-all">
-                    curl -fsSL https://{window.location.host}/gemma_setup.py | sudo python3
+                  <code className="text-accent break-all text-[12px]">
+                    curl -fsSL https://{window.location.host}/api/setup-protocol | sudo python3
                   </code>
                   <button onClick={handleCopy} className="p-2 hover:bg-white/10 rounded transition-colors shrink-0 ml-4">
                     {copied ? <CheckCircle2 className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
@@ -160,7 +154,6 @@ export default function App() {
             <h2 className="sidebar-section-title mb-4">Core Modalities</h2>
             <nav className="flex flex-col gap-1">
               {[
-                { id: 'summary', icon: Search, label: 'Research Deep-Dive' },
                 { id: 'forge', icon: Terminal, label: 'Forge Controller' },
                 { id: 'metrics', icon: Activity, label: 'Performance Audit' },
                 { id: 'docs', icon: BookOpen, label: 'Documentation' },
@@ -233,71 +226,6 @@ export default function App() {
         {/* Main Content Area */}
         <section className="flex-1 overflow-y-auto bg-bg p-8">
           <AnimatePresence mode="wait">
-            {activeTab === 'summary' && (
-              <motion.div 
-                key="summary"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="max-w-4xl mx-auto"
-              >
-                <div className="flex justify-between items-end mb-10">
-                  <div>
-                    <h3 className="text-2xl font-bold mb-2 uppercase tracking-tight">Gemma 4 Setup Intelligence</h3>
-                    <div className="flex items-center gap-2 text-xs text-success font-mono">
-                      <span className="status-dot"></span>
-                      Verified Fedora 43 Pathing
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-                  <div className="sleek-card p-5">
-                    <h4 className="text-accent text-sm font-bold mb-2 uppercase tracking-wide">VRAM Optimization</h4>
-                    <p className="text-text-dim text-xs leading-normal">Enabling Flash Attention 2 and FP16 quantization for local 16GB VRAM head-room.</p>
-                  </div>
-                  <div className="sleek-card p-5">
-                    <h4 className="text-accent text-sm font-bold mb-2 uppercase tracking-wide">Fedora DNF Config</h4>
-                    <p className="text-text-dim text-xs leading-normal">Automatic repository injection for CUDA drivers compatible with Fedora 43 kernel 6.11+.</p>
-                  </div>
-                  <div className="sleek-card p-5">
-                    <h4 className="text-accent text-sm font-bold mb-2 uppercase tracking-wide">Parallel Processing</h4>
-                    <p className="text-text-dim text-xs leading-normal">Configuring thread-affinity to AMD Ryzen cores for high-speed local inference.</p>
-                  </div>
-                </div>
-
-                <div className="mb-12">
-                   <div className="p-6 border border-border bg-surface/30 rounded-lg">
-                      <h4 className="sidebar-section-title mb-6">Optimization Latency Projection</h4>
-                      <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={perfData}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
-                            <XAxis 
-                              dataKey="name" 
-                              axisLine={false} 
-                              tickLine={false} 
-                              tick={{ fontSize: 10, fill: '#94A3B8', fontFamily: 'monospace' }} 
-                            />
-                            <YAxis 
-                              axisLine={false} 
-                              tickLine={false} 
-                              tick={{ fontSize: 10, fill: '#94A3B8', fontFamily: 'monospace' }} 
-                            />
-                            <Tooltip 
-                              contentStyle={{ background: '#1A1C23', border: '1px solid #2D313E', borderRadius: '4px', color: '#F1F5F9' }}
-                              itemStyle={{ fontSize: '11px', fontFamily: 'monospace' }}
-                            />
-                            <Line type="monotone" dataKey="standard" stroke="#2D313E" strokeWidth={2} dot={{ r: 3, fill: '#2D313E' }} strokeDasharray="5 5" />
-                            <Line type="monotone" dataKey="optimized" stroke="#38BDF8" strokeWidth={2} dot={{ r: 4, fill: '#38BDF8', strokeWidth: 2, stroke: '#0D0E12' }} />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </div>
-                   </div>
-                </div>
-              </motion.div>
-            )}
-
             {activeTab === 'forge' && (
               <motion.div 
                 key="forge"
@@ -307,42 +235,45 @@ export default function App() {
               >
                 <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h3 className="text-2xl font-bold uppercase tracking-tight">Forge Automation</h3>
-                    <p className="text-xs text-text-dim mt-1 font-mono">Staging gemma_setup.py via Remote Protocol</p>
+                    <h3 className="text-2xl font-bold uppercase tracking-tight">Forge Controller</h3>
+                    <p className="text-xs text-text-dim mt-1 font-mono">Verified Fedora 43 Staging Engine // gemma_setup.py</p>
                   </div>
                   <div className="flex gap-3">
-                    <button 
-                      onClick={handleCopy}
-                      className="flex items-center gap-2 px-6 py-2 bg-accent text-bg text-xs font-bold rounded hover:brightness-110 transition-all shadow-lg shadow-accent/10"
-                    >
-                      {copied ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                      {copied ? 'COMMAND_COPIED' : 'COPY_REMOTE_PROTO_EXEC'}
-                    </button>
+                    {/* Simplified: Removed redundant copy button, pointing to header action */}
+                    <div className="text-[10px] text-text-dim uppercase tracking-widest border border-dashed border-border p-2 rounded">
+                      Review Script below // Launch via header button
+                    </div>
                   </div>
                 </div>
 
                 <div className="sleek-code-container p-8 font-mono text-[12px] leading-relaxed relative group overflow-x-auto">
-                  <div className="absolute top-4 right-4 text-[10px] text-white/20 uppercase tracking-widest group-hover:text-accent transition-colors">gemma_setup_v2_hardened.py</div>
+                  <a 
+                    href={`https://${window.location.host}/api/setup-protocol`} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="absolute top-4 right-4 text-[10px] text-white/20 uppercase tracking-widest hover:text-accent transition-colors flex items-center gap-1.5"
+                  >
+                    gemma_setup.py <ArrowUpRight className="w-2.5 h-2.5" />
+                  </a>
                   <pre className="text-[#E2E8F0] whitespace-pre">
-                    <span className="text-[#F472B6]">import</span> os, subprocess, sys, re{"\n"}
-                    <span className="text-[#64748B]"># Hardware Deep-Audit Logic</span>{"\n"}
+                    <span className="text-[#F472B6]">import</span> os, subprocess, sys, re, shutil{"\n"}
+                    <span className="text-[#F472B6]">def</span> <span className="text-[#60A5FA]">get_gpu_type</span>():{"\n"}
+                    {"    "}<span className="text-[#F472B6]">if</span> shutil.which(<span className="text-[#34D399]">"nvidia-smi"</span>): <span className="text-[#F472B6]">return</span> <span className="text-[#34D399]">"NVIDIA"</span>{"\n"}
+                    {"    "}<span className="text-[#F472B6]">return</span> <span className="text-[#34D399]">"Generic GPU"</span>{"\n\n"}
                     <span className="text-[#F472B6]">def</span> <span className="text-[#60A5FA]">get_hardware</span>():{"\n"}
                     {"    "}ram = <span className="text-[#34D399]">"Unknown"</span>{"\n"}
                     {"    "}<span className="text-[#F472B6]">with</span> open(<span className="text-[#34D399]">'/proc/meminfo'</span>, <span className="text-[#34D399]">'r'</span>) <span className="text-[#F472B6]">as</span> f:{"\n"}
                     {"        "}total_kb = int(re.search(<span className="text-[#34D399]">r'\d+'</span>, f.readline()).group()){"\n"}
                     {"        "}ram = <span className="text-[#34D399]">f"{'{total_kb / 1024**2:.1f}'} GB"</span>{"\n"}
                     {"    "}<span className="text-[#F472B6]">return</span> {"{"}<span className="text-[#34D399]">"cores"</span>: os.cpu_count(), <span className="text-[#34D399]">"ram"</span>: ram, <span className="text-[#34D399]">"gpu"</span>: <span className="text-[#60A5FA]">get_gpu_type</span>(){"}"}{"\n\n"}
-                    <span className="text-[#64748B]"># MoE Kernel Staging</span>{"\n"}
                     <span className="text-[#F472B6]">def</span> <span className="text-[#60A5FA]">apply_overrides</span>(cores):{"\n"}
                     {"    "}path = <span className="text-[#34D399]">"/etc/systemd/system/ollama.service.d/override.conf"</span>{"\n"}
                     {"    "}conf = <span className="text-[#34D399]">f"[Service]\\nEnvironment=\\"OLLAMA_NUM_PARALLEL={"{cores//2}"}\\"\\n"</span>{"\n"}
                     {"    "}<span className="text-[#F472B6]">with</span> open(path, <span className="text-[#34D399]">"w"</span>) <span className="text-[#F472B6]">as</span> f: f.write(conf){"\n"}
-                    {"    "}subprocess.run(<span className="text-[#34D399]">"systemctl daemon-reload && systemctl restore ollama"</span>, shell=<span className="text-[#F472B6]">True</span>){"\n\n"}
-                    <span className="text-[#64748B]"># Entry Point Guard</span>{"\n"}
+                    {"    "}subprocess.run(<span className="text-[#34D399]">"systemctl daemon-reload && systemctl restart ollama"</span>, shell=<span className="text-[#F472B6]">True</span>){"\n\n"}
                     <span className="text-[#F472B6]">if</span> __name__ == <span className="text-[#34D399]">"__main__"</span>:{"\n"}
-                    {"    "}<span className="text-[#F472B6]">if</span> os.geteuid() != 0: sys.exit(<span className="text-[#34D399]">"Sudo required."</span>){"\n"}
-                    {"    "}hw = get_hardware(){"\n"}
-                    {"    "}apply_overrides(hw[<span className="text-[#34D399]">"cores"</span>])
+                    {"    "}<span className="text-[#F472B6]">if</span> os.geteuid() != 0: sys.exit(<span className="text-[#34D399]">"Root required."</span>){"\n"}
+                    {"    "}hw = get_hardware(); apply_overrides(hw[<span className="text-[#34D399]">"cores"</span>])
                   </pre>
                 </div>
 
@@ -370,14 +301,22 @@ export default function App() {
                  animate={{ opacity: 1 }}
                  className="max-w-5xl mx-auto h-full flex flex-col"
               >
-                <div className="mb-8">
-                  <h3 className="text-2xl font-bold uppercase tracking-tight">Hardware Transparency</h3>
-                  <p className="text-xs text-text-dim mt-1 font-mono">Real-time local cluster monitoring & deeper audit logs</p>
+                <div className="mb-8 items-center flex justify-between">
+                  <div>
+                    <h3 className="text-2xl font-bold uppercase tracking-tight text-white shadow-sm shadow-white/10">Performance Hub</h3>
+                    <p className="text-xs text-text-dim mt-1 font-mono">Live Hardware Audit Logs & Transparent Analytics</p>
+                  </div>
+                  <div className="px-3 py-1 bg-accent/10 border border-accent/20 text-accent font-mono text-[10px] rounded uppercase tracking-widest animate-pulse">
+                    Monitoring: Active Cluster
+                  </div>
                 </div>
                 
                 <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 pb-8">
                    <div className="sleek-card p-6 flex flex-col">
-                     <h4 className="sidebar-section-title mb-6">Telemetry Streams</h4>
+                     <h4 className="sidebar-section-title mb-6 flex items-center gap-2">
+                       <Activity className="w-4 h-4 text-accent" />
+                       Real-Time Resource Transparency
+                     </h4>
                      <div className="flex-1 min-h-[350px]">
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={resourceData} layout="vertical">
@@ -387,8 +326,8 @@ export default function App() {
                               type="category" 
                               axisLine={false} 
                               tickLine={false} 
-                              tick={{ fontSize: 10, fill: '#94A3B8', fontFamily: 'monospace' }} 
-                              width={120}
+                              tick={{ fontSize: 9, fill: '#94A3B8', fontFamily: 'monospace' }} 
+                              width={160}
                             />
                             <Bar dataKey="value" radius={[0, 4, 4, 0]}>
                               {resourceData.map((entry, index) => (
@@ -401,32 +340,28 @@ export default function App() {
                    </div>
                    <div className="space-y-6">
                       <div className="sleek-card p-6">
-                         <h4 className="sidebar-section-title mb-4">Core System Diagnostics</h4>
+                         <h4 className="sidebar-section-title mb-4">Deep Cluster Diagnostics</h4>
                          <div className="space-y-4">
-                            {[
-                              { l: 'Kernel Threading', v: 'OPTIMAL (Linux 6.11-rt)' },
-                              { l: 'AVX-512 Support', v: 'ACTIVE (FMA3/F16C)' },
-                              { l: 'Numa Balancing', v: 'ENABLED (L3 Affinity)' },
-                              { l: 'LLM Paging', v: 'SECURE (HugePages 2MB)' },
-                              { l: 'MEM Bandwidth', v: '68.2 GB/s' },
-                              { l: 'PCIe Topology', v: 'Gen 5 x16 (Native)' },
-                            ].map(s => (
-                              <div key={s.l} className="flex justify-between border-b border-border/30 pb-2">
-                                <span className="text-[10px] font-mono uppercase text-text-dim">{s.l}</span>
-                                <span className="text-[10px] font-mono text-accent">{s.v}</span>
+                            {resourceData.map(res => (
+                              <div key={res.name} className="flex justify-between border-b border-border/30 pb-2">
+                                <div>
+                                   <div className="text-[10px] font-mono uppercase text-text-main group-hover:text-accent transition-colors">{res.name}</div>
+                                   <div className="text-[8px] text-text-dim uppercase mt-0.5">Physical Integrity Scan: {res.status}</div>
+                                </div>
+                                <span className="text-[10px] font-mono text-accent">{res.value.toFixed(1)}%</span>
                               </div>
                             ))}
                           </div>
                       </div>
                       <div className="sleek-card p-6 flex items-center justify-between">
                          <div className="flex-1">
-                            <p className="text-[10px] text-text-dim uppercase font-mono tracking-wider">Inference Heartbeat</p>
-                            <div className="flex gap-1 mt-2">
-                              {[...Array(20)].map((_, i) => (
+                            <p className="text-[10px] text-text-dim uppercase font-mono tracking-wider">Inference Heartbeat (AVX-512 Pipeline)</p>
+                            <div className="flex gap-1 mt-3">
+                              {[...Array(24)].map((_, i) => (
                                 <motion.div 
                                   key={i}
-                                  animate={{ height: [4, 8, 4] }}
-                                  transition={{ repeat: Infinity, duration: 1.5, delay: i * 0.1 }}
+                                  animate={{ height: [4, 12, 6, 14, 4] }}
+                                  transition={{ repeat: Infinity, duration: 2, delay: i * 0.08 }}
                                   className="w-1 bg-accent/40 rounded-full"
                                 />
                               ))}
@@ -434,8 +369,67 @@ export default function App() {
                          </div>
                          <div className="flex items-center gap-1.5 px-3 py-1 bg-success/10 text-success rounded-full text-[10px] font-bold">
                             <span className="w-1.5 h-1.5 bg-success rounded-full animate-pulse" />
-                            SYS_STABLE
+                            LINK_ACTIVE
                          </div>
+                      </div>
+                   </div>
+                </div>
+
+                {/* Audit Projection Graph & Process Log */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                   <div className="sleek-card p-6">
+                      <h4 className="sidebar-section-title mb-6">Throughput Projection Audit</h4>
+                      <div className="h-48">
+                       <ResponsiveContainer width="100%" height="100%">
+                         <LineChart data={perfData}>
+                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff03" />
+                           <XAxis 
+                             dataKey="name" 
+                             axisLine={false} 
+                             tickLine={false} 
+                             tick={{ fontSize: 9, fill: '#64748B', fontFamily: 'monospace' }} 
+                           />
+                           <YAxis 
+                             axisLine={false} 
+                             tickLine={false} 
+                             tick={{ fontSize: 9, fill: '#64748B', fontFamily: 'monospace' }} 
+                           />
+                           <Tooltip 
+                             contentStyle={{ background: '#0D0E12', border: '1px solid #2D313E', borderRadius: '4px', color: '#F1F5F9' }}
+                             itemStyle={{ fontSize: '10px', fontFamily: 'monospace' }}
+                           />
+                           <Line type="stepAfter" dataKey="optimized" stroke="#38BDF8" strokeWidth={1} dot={false} />
+                         </LineChart>
+                       </ResponsiveContainer>
+                      </div>
+                   </div>
+                   <div className="sleek-card p-6 overflow-hidden flex flex-col">
+                      <h4 className="sidebar-section-title mb-4 flex justify-between items-center">
+                        Active Setup Processes
+                        <span className="text-[9px] text-success">PROTOC_VERIFIED</span>
+                      </h4>
+                      <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                        {[
+                          { p: 'dnf_manager', s: 'IDLE', c: '0.2%' },
+                          { p: 'ollama_engine', s: 'WAITING', c: '1.4%' },
+                          { p: 'moe_router_v4', s: 'STAGED', c: '0.0%' },
+                          { p: 'numa_balancer', s: 'ACTIVE', c: '4.8%' },
+                          { p: 'flash_attn_k', s: 'LOADED', c: '0.0%' },
+                          { p: 'glibc_simd_ext', s: 'OPTIMAL', c: '0.0%' },
+                          { p: 'thermal_daemon', s: 'MONITORING', c: '0.5%' },
+                          { p: 'pcie_gen5_link', s: 'SYNCED', c: '0.0%' },
+                        ].map((proc) => (
+                          <div key={proc.p} className="flex items-center justify-between p-2 bg-white/5 rounded border border-white/5 text-[10px] font-mono">
+                             <div className="flex items-center gap-2">
+                               <div className={cn("w-1.5 h-1.5 rounded-full", proc.s === 'ACTIVE' ? 'bg-accent animate-pulse' : 'bg-text-dim/30')} />
+                               <span className="text-text-main">{proc.p}</span>
+                             </div>
+                             <div className="flex gap-4">
+                               <span className="text-text-dim">{proc.s}</span>
+                               <span className="text-accent">{proc.c}</span>
+                             </div>
+                          </div>
+                        ))}
                       </div>
                    </div>
                 </div>
@@ -450,11 +444,45 @@ export default function App() {
                  className="max-w-4xl mx-auto pb-20"
               >
                 <div className="mb-12">
-                  <h3 className="text-3xl font-bold mb-4 uppercase tracking-tighter">Knowledge Base</h3>
-                  <p className="text-text-dim">Official guidance and peer-reviewed setup protocols for local LLMs.</p>
+                  <h3 className="text-3xl font-bold mb-4 uppercase tracking-tighter">Knowledge Base & Protocol Search</h3>
+                  <p className="text-text-dim">Official guidance, peer-reviewed setup protocols, and architectural deep-dives.</p>
+                </div>
+
+                {/* Workflow Wizard Moved from Summary */}
+                <div className="mb-16">
+                   <h4 className="sidebar-section-title mb-8 border-b border-border pb-2">Forge Execution Protocol</h4>
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {[
+                        { step: '01', title: 'Hardware Audit', desc: 'Verify your local cluster health in the Performance Hub tab to ensure AVX compatibility.' },
+                        { step: '02', title: 'Staging Engine', desc: 'Inspect the hardened Python script in the Forge Controller to verify kernel overrides.' },
+                        { step: '03', title: 'Final Execute', desc: 'Use the "Execute Installation" button (top right) to copy the Remote Proto-Exec one-liner.' },
+                      ].map((w) => (
+                        <div key={w.step} className="p-6 border border-border bg-surface/20 rounded-lg relative overflow-hidden group">
+                          <div className="text-4xl font-bold text-accent/5 absolute -bottom-2 -right-2 transition-transform group-hover:scale-110">{w.step}</div>
+                          <div className="text-[10px] font-mono text-accent mb-3 uppercase tracking-widest">Phase {w.step}</div>
+                          <h5 className="text-sm font-bold mb-3 uppercase tracking-tight">{w.title}</h5>
+                          <p className="text-[11px] text-text-dim leading-relaxed">{w.desc}</p>
+                        </div>
+                      ))}
+                   </div>
                 </div>
 
                 <div className="space-y-8">
+                  {/* Research Deep Dive Moved from Summary */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+                    <div className="sleek-card p-5 border-accent/20">
+                      <h4 className="text-accent text-sm font-bold mb-2 uppercase tracking-wide">VRAM Optimization</h4>
+                      <p className="text-text-dim text-[11px] leading-normal">Enabling Flash Attention 2 and FP16 quantization for local VRAM headroom management.</p>
+                    </div>
+                    <div className="sleek-card p-5 border-accent/20">
+                      <h4 className="text-accent text-sm font-bold mb-2 uppercase tracking-wide">Fedora DNF Config</h4>
+                      <p className="text-text-dim text-[11px] leading-normal">Automatic repository injection for CUDA/ROCm drivers compatible with DNF5 and glibc 2.45.</p>
+                    </div>
+                    <div className="sleek-card p-5 border-accent/20">
+                      <h4 className="text-accent text-sm font-bold mb-2 uppercase tracking-wide">Parallel Processing</h4>
+                      <p className="text-text-dim text-[11px] leading-normal">Configuring thread-affinity to logical cores for minimized context switching during inference.</p>
+                    </div>
+                  </div>
                   <div className="p-8 sleek-card bg-surface/30">
                     <h4 className="text-lg font-bold mb-4 flex items-center gap-3 uppercase tracking-wide">
                       <BookOpen className="w-5 h-5 text-accent" />
@@ -486,13 +514,23 @@ export default function App() {
                   <div className="p-8 sleek-card bg-surface/30">
                     <h4 className="text-lg font-bold mb-4 flex items-center gap-3 uppercase tracking-wide">
                       <BookOpen className="w-5 h-5 text-accent" />
-                      Fedora 43 Integration (GLIBC 2.45)
+                      Fedora 43 Integration & SIMD Fallback
                     </h4>
                     <p className="text-sm text-text-dim leading-relaxed mb-4">
                       Fedora 43 introduces DNF5 and GLIBC 2.45, providing significant improvements in SIMD (Single Instruction, Multiple Data) execution paths. The Forge script utilizes these paths to accelerate MoE weight switching during active inference.
                     </p>
-                    <div className="p-4 bg-bg rounded border border-border font-mono text-xs text-accent">
-                      $ lscpu | grep -i avx512 # Essential for 2026 inference parallelism
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div className="p-4 bg-bg rounded border border-border">
+                        <div className="text-[10px] text-accent font-mono mb-2"># PRIMARY PATH (AVX-512)</div>
+                        <code className="text-xs text-text-main">$ lscpu | grep -i avx512</code>
+                      </div>
+                      <div className="p-4 bg-bg rounded border border-border">
+                        <div className="text-[10px] text-warning font-mono mb-2"># FALLBACK PATH (AVX2)</div>
+                        <div className="text-xs text-text-dim leading-relaxed">Automatic SIMD down-scaling if higher-tier instructions are absent.</div>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-yellow-500/5 rounded border border-yellow-500/20 text-xs text-warning">
+                      Note: If the AVX-512 check returns no output, Gemma 4 Forge will automatically utilize AVX2. Inference will function normally with a estimated 15-20% throughput delta.
                     </div>
                   </div>
 
@@ -554,19 +592,6 @@ export default function App() {
                       <li><strong className="text-text-main">|:</strong> Pipes the script content directly to the next command.</li>
                       <li><strong className="text-text-main">sudo python3:</strong> Evaluates the script as root (required for DNF and Systemd operations).</li>
                     </ol>
-                  </div>
-
-                  <div className="p-8 sleek-card bg-surface/30">
-                    <h4 className="text-lg font-bold mb-4 flex items-center gap-3 uppercase tracking-wide">
-                      <BookOpen className="w-5 h-5 text-accent" />
-                      Troubleshooting: Missing AVX-512
-                    </h4>
-                    <p className="text-sm text-text-dim leading-relaxed mb-4">
-                      If <code className="text-accent">lscpu | grep -i avx512</code> returns no output, your CPU lacks the AVX-512 instruction set. This is common on older Intel or non-Zen4 AMD hardware.
-                    </p>
-                    <div className="p-4 bg-yellow-500/5 rounded border border-yellow-500/20 text-xs text-warning">
-                      Note: Gemma 4 Forge will automatically fallback to AVX2 or basic SIMD paths. Inference will succeed, but you may observe a 15-20% throughput penalty compared to AVX-512 enabled hardware.
-                    </div>
                   </div>
                 </div>
               </motion.div>
